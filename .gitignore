@@ -28,3 +28,4 @@ test/Test
 Testing/
 
 *.swp
+*.core

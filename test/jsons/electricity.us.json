@@ -1,0 +1,8 @@
+{
+  "@type": "electricity",
+  "@override": {
+    "country": "US"
+  },
+  "voltage": 110,
+  "kwhRate": 0.12
+}
