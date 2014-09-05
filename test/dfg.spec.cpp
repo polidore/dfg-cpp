@@ -20,7 +20,10 @@ TEST_CASE("Should find no jsons", "[json]") {
   auto jsons = dfg::loadJsons("./");
   REQUIRE(jsons.size() == 3);
   REQUIRE(jsons[0].get<int>("voltage") == 110);
+  int numOverride = 0;
   for(auto j : jsons) {
     REQUIRE(j.get<std::string>("@type") == "electricity");
+    numOverride += j.count("@override");
   }
+  REQUIRE(numOverride == 2);
 }
