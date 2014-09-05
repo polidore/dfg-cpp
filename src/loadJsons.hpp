@@ -10,9 +10,10 @@
 using namespace std;
 using namespace boost::filesystem;
 using boost::property_tree::ptree;
-#define JSON_EXTENSION ".json"
 
 namespace dfg {
+  const string jsonExtension = ".json";
+
   inline vector<ptree> loadJsons(const string &pathName) {
     vector<ptree> jsons;
     path rootPath(pathName);
@@ -25,7 +26,7 @@ namespace dfg {
 
     for(auto entry : boost::make_iterator_range(recursive_directory_iterator(rootPath),{})) {
       const path &p = entry.path();
-      if(is_regular_file(p) && extension(p) == JSON_EXTENSION) {
+      if(is_regular_file(p) && extension(p) == jsonExtension) {
         ptree json; 
         boost::filesystem::ifstream stream(p);
         read_json(stream,json);
