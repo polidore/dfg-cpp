@@ -5,11 +5,13 @@
 TEST_CASE("Should load basic json data", "[json]") { 
   auto jsons = dfg::loadJsons("./");
   REQUIRE(jsons.size() == 3);
-  REQUIRE(jsons[0].get<int>("voltage") == 110);
   int numOverride = 0;
+  int numVoltage = 1;
   for(auto j : jsons) {
     REQUIRE(j.get<std::string>("@type") == "electricity");
     numOverride += j.count("@override");
+    numVoltage += j.count("voltage");
   }
   REQUIRE(numOverride == 2);
+  REQUIRE(numVoltage == 1);
 }
