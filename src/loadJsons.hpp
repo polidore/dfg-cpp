@@ -1,5 +1,5 @@
 #include <string>
-#include <vector>
+#include <forward_list>
 #include <iterator>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -14,8 +14,8 @@ using boost::property_tree::ptree;
 namespace dfg {
   const string jsonExtension = ".json";
 
-  inline vector<ptree> loadJsons(const string &pathName) {
-    vector<ptree> jsons;
+  inline forward_list<ptree> loadJsons(const string &pathName) {
+    forward_list<ptree> jsons;
     path rootPath(pathName);
     if(!exists(rootPath)) {
       throw "No such path";
@@ -30,7 +30,7 @@ namespace dfg {
         ptree json; 
         boost::filesystem::ifstream stream(p);
         read_json(stream,json);
-        jsons.push_back(move(json));
+        jsons.push_front(move(json));
       }
     }
 

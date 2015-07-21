@@ -4,7 +4,7 @@
 
 TEST_CASE("Should load basic json data", "[json]") { 
   auto jsons = dfg::loadJsons("./");
-  REQUIRE(jsons.size() == 3);
+  REQUIRE(std::distance(jsons.begin(),jsons.end()) == 3);
   int numOverride = 0;
   int numVoltage = 0;
   for(auto j : jsons) {
