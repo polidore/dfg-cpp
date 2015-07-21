@@ -42,10 +42,19 @@ namespace dfg {
     _fragments = loadJsons(path);
   }
 
-  DFGType DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
-    vector<ptree> typeFragments;
-    for(auto f : this._fragments) {
+  shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
+    forward_list<ptree> typeFragments;
+    auto prevIt = _fragments.before_begin();
+    for(auto it = _fragments.begin(); it != _fragments.end(); ++it) {
+      auto fragment = *it;
+      if(fragment.get<string>("@type") == typeName) {
+        typeFragments.push_front(std::move(fragment));
+        _fragments.erase_after(prevIt);
+      }
+      prevIt = it;
     }
-    _types
+    shared_ptr<DFGType> type = new DFGType(typeName,move(typeFragments),overrideScheme);
+    _types.insert(make_pair<string,shared_ptr<DFGType>>(typeName,type));
+    return type;
   }
 }
