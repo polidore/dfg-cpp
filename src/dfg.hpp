@@ -1,11 +1,33 @@
+#include <unordered_map>
+#include <string>
+#include <boost/property_tree/ptree.hpp>
+
+#include "loadJsons.hpp"
+
+using namespace std;
+using namespace boos::property_tree::ptree;
+
 namespace dfg {
-  class DFG {
-    public DFG() {
-    }
-    public ~DGF() {
-    } 
+  class DFGFactory {
+    public:
+      DFGFactory() {
+      }
+      ~DFGFactory() {
+      }
+
+    private:
+      unordered_map<string,DFGType> _types;
   }
 
-  private vector<ptree> jsons;
-  
+  class DFGType {
+    public DFGType() {
+    }
+    public ~DFGType() {
+    }
+
+    private:
+      vector<ptree> _fragments;
+      unordered_map<string,ptree> _primaryCache;
+      unordered_map<string,ptree> _secondaryCache;
+  }
 }
