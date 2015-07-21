@@ -1,5 +1,7 @@
 #include <unordered_map>
 #include <map>
+#include <forward_list>
+#include <vector>
 #include <string>
 #include <tuple>
 #include <boost/property_tree/ptree.hpp>
@@ -13,11 +15,11 @@ namespace dfg {
   class DFGTypeFactory {
     public:
       DFGTypeFactory(string path);
-      DFGType createType(string typeName, vector<string> overrideScheme);
-      DFGType getType(string typeName);
+      shared_ptr<DFGType> createType(string typeName, vector<string> overrideScheme);
+      shared_ptr<DFGType> getType(string typeName);
     private:
-      vector<ptree> _fragments;
-      unordered_map<string,DFGType> _types;
+      forward_list<ptree> _fragments;
+      unordered_map<string,shared_ptr<DFGType>> _types;
   }
 
   class DFGType {
@@ -44,5 +46,6 @@ namespace dfg {
     vector<ptree> typeFragments;
     for(auto f : this._fragments) {
     }
+    _types
   }
 }
