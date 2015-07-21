@@ -5,7 +5,7 @@
 #include "loadJsons.hpp"
 
 using namespace std;
-using namespace boos::property_tree::ptree;
+using namespace boost::property_tree::ptree;
 
 namespace dfg {
   class DFGFactory {
@@ -20,9 +20,11 @@ namespace dfg {
   }
 
   class DFGType {
-    public DFGType() {
+    public:
+      DFGType() {
     }
-    public ~DFGType() {
+    public:
+      ~DFGType() {
     }
 
     private:
