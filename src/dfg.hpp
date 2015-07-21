@@ -24,18 +24,18 @@ namespace dfg {
 
   class DFGType {
     public:
-      DFGType(string typeName, vector<ptree> typeFragments, vector<string> overrideScheme);
-      ptree getCfg(map<string,string> context);
+      DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme);
+      shared_ptr<ptree> getCfg(const map<string,string>& context);
     private:
       bool checkCollision();
-      ptree mergeCfgs(vector<ptree> fragments);
-      tuple<string,vector<ptree>> searchFragments(map<string,string> context);
-      bool fragMatch(ptree fragment,map<string,string> context);
-      string makeHash(map<string,string> context);
+      ptree mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments);
+      tuple<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
+      bool fragMatch(const ptree& fragment,const map<string,string>& context);
+      string makeHash(const map<string,string>& context);
     private:
-      vector<ptree> _fragments;
+      forward_list<ptree> _fragments;
       unordered_map<string,ptree> _primaryCache;
-      unordered_map<string,vector<ptree>> _secondaryCache;
+      unordered_map<string,forward_list<shared_ptr<ptree>>> _secondaryCache;
   }
 
   DFGTypeFactory::DFGTypeFactory(string path) {
