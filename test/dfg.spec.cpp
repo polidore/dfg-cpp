@@ -19,5 +19,5 @@ TEST_CASE("Should load basic json data", "[json]") {
 TEST_CASE("Create a factory", "[dfg]") {
   auto factory = dfg::DFGTypeFactory("./");
   auto type = factory.createType("electricity",{"country","state"});
-  REQUIRE(type.get() != NULL);
+  REQUIRE(type.use_count() == 2);
 }
