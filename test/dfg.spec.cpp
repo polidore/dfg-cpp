@@ -1,6 +1,6 @@
-#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include "../src/loadJsons.hpp"
+#include "../src/dfg.hpp"
 
 TEST_CASE("Should load basic json data", "[json]") { 
   auto jsons = dfg::loadJsons("./");
@@ -14,4 +14,10 @@ TEST_CASE("Should load basic json data", "[json]") {
   }
   REQUIRE(numOverride == 2);
   REQUIRE(numVoltage == 2);
+}
+
+TEST_CASE("Create a factory", "[dfg]") {
+  auto factory = dfg::DFGTypeFactory("./");
+  auto type = factory.createType("electricity",{"country","state"});
+  REQUIRE(type.get() != NULL);
 }

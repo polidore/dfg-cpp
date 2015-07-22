@@ -1,3 +1,6 @@
+#ifndef DFG_HPP
+#define DFG_HPP
+
 #include <unordered_map>
 #include <map>
 #include <utility>
@@ -10,19 +13,9 @@
 #include "loadJsons.hpp"
 
 using namespace std;
-using namespace boost::property_tree::ptree;
+using boost::property_tree::ptree;
 
 namespace dfg {
-  class DFGTypeFactory {
-    public:
-      DFGTypeFactory(string path);
-      shared_ptr<DFGType> createType(string typeName, vector<string> overrideScheme);
-      shared_ptr<DFGType> getType(string typeName);
-    private:
-      forward_list<ptree> _fragments;
-      unordered_map<string,shared_ptr<DFGType>> _types;
-  }
-
   class DFGType {
     public:
       DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme);
@@ -34,26 +27,48 @@ namespace dfg {
       bool fragMatch(const ptree& fragment,const map<string,string>& context);
       string makeHash(const map<string,string>& context);
     private:
+      string _typeName;
       forward_list<ptree> _fragments;
+      vector<string> _overrideScheme;
       unordered_map<string,ptree> _primaryCache;
       unordered_map<string,forward_list<shared_ptr<ptree>>> _secondaryCache;
-  }
+  };
+
+  class DFGTypeFactory {
+    public:
+      DFGTypeFactory(string path);
+      shared_ptr<DFGType> createType(string typeName, vector<string> overrideScheme);
+      shared_ptr<DFGType> getType(string typeName);
+    private:
+      forward_list<ptree> _fragments;
+      unordered_map<string,shared_ptr<DFGType>> _types;
+  };
+
 
   DFGTypeFactory::DFGTypeFactory(string path) {
     _fragments = loadJsons(path);
   }
 
+  DFGType::DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme) {
+    _typeName = typeName;
+    _fragments = typeFragments;
+    _overrideScheme = overrideScheme;
+  }
+  
   shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
     forward_list<ptree> typeFragments;
 
     auto prevIt = _fragments.before_begin();
-    for(auto it = _fragments.begin(); it != _fragments.end(); ++it) {
+    for(auto it = _fragments.begin(); it != _fragments.end(); ) {
       auto fragment = *it;
       if(fragment.get<string>("@type") == typeName) {
         typeFragments.push_front(std::move(fragment));
-        _fragments.erase_after(prevIt);
+        it = _fragments.erase_after(prevIt);
       }
-      prevIt = it;
+      else {
+        prevIt = it;
+        ++it;
+      }
     }
 
     auto type = make_shared<DFGType>(typeName,move(typeFragments),overrideScheme);
@@ -61,3 +76,5 @@ namespace dfg {
     return type;
   }
 }
+
+#endif

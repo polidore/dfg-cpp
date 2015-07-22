@@ -1,4 +1,7 @@
 #include <string>
+#ifndef DFG_LOAD_JSONS_H
+#define DFG_LOAD_JSONS_H
+
 #include <forward_list>
 #include <iterator>
 #include <boost/property_tree/ptree.hpp>
@@ -38,4 +41,4 @@ namespace dfg {
   }
 }
 
-
+#endif
