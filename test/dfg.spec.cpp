@@ -20,4 +20,20 @@ TEST_CASE("Create a factory", "[dfg]") {
   auto factory = dfg::DFGTypeFactory("./");
   auto type = factory.createType("electricity",{"country","state"});
   REQUIRE(type.use_count() == 2);
+  auto type2 = factory.getType("electricity");
+  REQUIRE(type == type2);
+  REQUIRE(type2.use_count() == 3);
+  REQUIRE(type.use_count() == 3);
+}
+
+TEST_CASE("Create a valid type","[dfg]") {
+  auto factory = dfg::DFGTypeFactory("./");
+  auto type = factory.createType("electricity",{"country","state"});
+  REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::None);
+  REQUIRE(type->getTypeName() == "electricity");
+  auto fragments = type->getFragments();
+  REQUIRE(std::distance(fragments.begin(),fragments.end()) == 3);
+  REQUIRE(type->getOverrideScheme().size() == 2);
+
+  REQUIRE(type.use_count() == 2);
 }

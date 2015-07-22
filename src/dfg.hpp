@@ -16,10 +16,16 @@ using namespace std;
 using boost::property_tree::ptree;
 
 namespace dfg {
+  enum CacheStatus { Primary,Secondary,None };
+
   class DFGType {
     public:
       DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme);
       shared_ptr<ptree> getCfg(const map<string,string>& context);
+      const inline string getTypeName() { return _typeName; };
+      const inline forward_list<ptree>& getFragments() { return _fragments; };
+      const inline vector<string>& getOverrideScheme() { return _overrideScheme; };
+      const inline CacheStatus getLastCacheStatus() { return _lastCacheStatus; };
     private:
       bool checkCollision();
       ptree mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments);
@@ -32,6 +38,7 @@ namespace dfg {
       vector<string> _overrideScheme;
       unordered_map<string,ptree> _primaryCache;
       unordered_map<string,forward_list<shared_ptr<ptree>>> _secondaryCache;
+      CacheStatus _lastCacheStatus;
   };
 
   class DFGTypeFactory {
@@ -43,18 +50,22 @@ namespace dfg {
       forward_list<ptree> _fragments;
       unordered_map<string,shared_ptr<DFGType>> _types;
   };
-
-
+  
   DFGTypeFactory::DFGTypeFactory(string path) {
     _fragments = loadJsons(path);
   }
 
+  //Type
+  /////////////////////////
   DFGType::DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme) {
     _typeName = typeName;
     _fragments = typeFragments;
     _overrideScheme = overrideScheme;
+    _lastCacheStatus = CacheStatus::None;
   }
-  
+
+  //Type Factory
+  ////////////////////////
   shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
     forward_list<ptree> typeFragments;
 
@@ -74,6 +85,10 @@ namespace dfg {
     auto type = make_shared<DFGType>(typeName,move(typeFragments),overrideScheme);
     _types.insert(make_pair(typeName,type));
     return type;
+  }
+
+  shared_ptr<DFGType> DFGTypeFactory::getType(string typeName) {
+    return _types[typeName];
   }
 }
 
