@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <map>
+#include <utility>
 #include <forward_list>
 #include <vector>
 #include <string>
@@ -44,6 +45,7 @@ namespace dfg {
 
   shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
     forward_list<ptree> typeFragments;
+
     auto prevIt = _fragments.before_begin();
     for(auto it = _fragments.begin(); it != _fragments.end(); ++it) {
       auto fragment = *it;
@@ -53,8 +55,9 @@ namespace dfg {
       }
       prevIt = it;
     }
-    shared_ptr<DFGType> type = new DFGType(typeName,move(typeFragments),overrideScheme);
-    _types.insert(make_pair<string,shared_ptr<DFGType>>(typeName,type));
+
+    auto type = make_shared<DFGType>(typeName,move(typeFragments),overrideScheme);
+    _types.insert(make_pair(typeName,type));
     return type;
   }
 }
