@@ -44,8 +44,8 @@ namespace dfg {
   class DFGTypeFactory {
     public:
       DFGTypeFactory(string path);
-      shared_ptr<DFGType> createType(string typeName, vector<string> overrideScheme);
-      shared_ptr<DFGType> getType(string typeName);
+      const shared_ptr<DFGType> createType(string typeName, vector<string> overrideScheme);
+      const inline shared_ptr<DFGType> getType(string typeName) { return _types[typeName]; };
     private:
       forward_list<ptree> _fragments;
       unordered_map<string,shared_ptr<DFGType>> _types;
@@ -66,7 +66,7 @@ namespace dfg {
 
   //Type Factory
   ////////////////////////
-  shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
+  const shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
     forward_list<ptree> typeFragments;
 
     auto prevIt = _fragments.before_begin();
@@ -85,10 +85,6 @@ namespace dfg {
     auto type = make_shared<DFGType>(typeName,move(typeFragments),overrideScheme);
     _types.insert(make_pair(typeName,type));
     return type;
-  }
-
-  shared_ptr<DFGType> DFGTypeFactory::getType(string typeName) {
-    return _types[typeName];
   }
 }
 
