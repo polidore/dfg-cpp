@@ -4,16 +4,7 @@
 
 TEST_CASE("Should load basic json data", "[json]") { 
   auto jsons = dfg::loadJsons("./");
-  REQUIRE(std::distance(jsons.begin(),jsons.end()) == 3);
-  int numOverride = 0;
-  int numVoltage = 0;
-  for(auto j : jsons) {
-    REQUIRE(j.get<std::string>("@type") == "electricity");
-    numOverride += j.count("@override");
-    numVoltage += j.count("voltage");
-  }
-  REQUIRE(numOverride == 2);
-  REQUIRE(numVoltage == 2);
+  REQUIRE(std::distance(jsons.begin(),jsons.end()) == 4);
 }
 
 TEST_CASE("DFG Basics", "[dfg]") {
@@ -29,12 +20,12 @@ TEST_CASE("DFG Basics", "[dfg]") {
   }
 
 
-  SECTION("Test DFGType") {
+  SECTION("Test Electricity DFGType") {
     auto type = factory.createType("electricity",{"country","state","county","city"});
     REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::None);
     REQUIRE(type->getTypeName() == "electricity");
     auto fragments = type->getFragments();
-    REQUIRE(std::distance(fragments.begin(),fragments.end()) == 3);
+    REQUIRE(std::distance(fragments.begin(),fragments.end()) == 4);
     REQUIRE(type->getOverrideScheme().size() == 4);
     REQUIRE(type.use_count() == 2);
 

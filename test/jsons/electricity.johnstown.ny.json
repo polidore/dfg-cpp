@@ -1,0 +1,9 @@
+{
+  "@type": "electricity",
+  "@override": {
+    "state": "NY",
+    "city":  "Johnstown"
+  },
+  "kwhRate": 0.19,
+  "hydro": 0.5
+}
