@@ -1,5 +1,6 @@
 {
   "@type": "electricity",
+  "@overrideScheme": ["country","state","county","city"],
   "kwhRate": 0.2,
   "ac": true,
   "voltage": 220,
