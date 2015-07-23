@@ -16,24 +16,29 @@ TEST_CASE("Should load basic json data", "[json]") {
   REQUIRE(numVoltage == 2);
 }
 
-TEST_CASE("Create a factory", "[dfg]") {
+TEST_CASE("DFG Basics", "[dfg]") {
   auto factory = dfg::DFGTypeFactory("./");
-  auto type = factory.createType("electricity",{"country","state"});
-  REQUIRE(type.use_count() == 2);
-  auto type2 = factory.getType("electricity");
-  REQUIRE(type == type2);
-  REQUIRE(type2.use_count() == 3);
-  REQUIRE(type.use_count() == 3);
-}
 
-TEST_CASE("Create a valid type","[dfg]") {
-  auto factory = dfg::DFGTypeFactory("./");
-  auto type = factory.createType("electricity",{"country","state"});
-  REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::None);
-  REQUIRE(type->getTypeName() == "electricity");
-  auto fragments = type->getFragments();
-  REQUIRE(std::distance(fragments.begin(),fragments.end()) == 3);
-  REQUIRE(type->getOverrideScheme().size() == 2);
+  SECTION("Test the factory") {
+    auto type = factory.createType("electricity",{"country","state","county","city"});
+    REQUIRE(type.use_count() == 2);
+    auto type2 = factory.getType("electricity");
+    REQUIRE(type == type2);
+    REQUIRE(type2.use_count() == 3);
+    REQUIRE(type.use_count() == 3);
+  }
 
-  REQUIRE(type.use_count() == 2);
+
+  SECTION("Test DFGType") {
+    auto type = factory.createType("electricity",{"country","state","county","city"});
+    REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::None);
+    REQUIRE(type->getTypeName() == "electricity");
+    auto fragments = type->getFragments();
+    REQUIRE(std::distance(fragments.begin(),fragments.end()) == 3);
+    REQUIRE(type->getOverrideScheme().size() == 4);
+    REQUIRE(type.use_count() == 2);
+
+    REQUIRE(dfg::hasKey<string>(*fragments.begin(),"@override") == false); //defaults
+    REQUIRE(dfg::hasKey<string>(*(++fragments.begin()),"@override") == true);
+  }
 }

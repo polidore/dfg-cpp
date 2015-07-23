@@ -9,6 +9,7 @@
 #include <string>
 #include <tuple>
 #include <boost/property_tree/ptree.hpp>
+#include <cmath>
 
 #include "loadJsons.hpp"
 
@@ -17,6 +18,12 @@ using boost::property_tree::ptree;
 
 namespace dfg {
   enum CacheStatus { Primary,Secondary,None };
+
+  template <class T>
+  static bool hasKey(const ptree& p,string path) {
+    return p.get_optional<T>(path) != boost::none;
+  }
+
 
   class DFGType {
     public:
@@ -32,6 +39,7 @@ namespace dfg {
       tuple<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
       bool fragMatch(const ptree& fragment,const map<string,string>& context);
       string makeHash(const map<string,string>& context);
+      bool fragCmp(const ptree &a, const ptree &b);
     private:
       string _typeName;
       forward_list<ptree> _fragments;
@@ -51,10 +59,6 @@ namespace dfg {
       unordered_map<string,shared_ptr<DFGType>> _types;
   };
   
-  DFGTypeFactory::DFGTypeFactory(string path) {
-    _fragments = loadJsons(path);
-  }
-
   //Type
   /////////////////////////
   DFGType::DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme) {
@@ -62,10 +66,33 @@ namespace dfg {
     _fragments = typeFragments;
     _overrideScheme = overrideScheme;
     _lastCacheStatus = CacheStatus::None;
+
+    _fragments.sort([this](ptree &a,ptree &b) { return fragCmp(a,b);});
   }
+
+  bool DFGType::fragCmp(const ptree &a, const ptree &b) {
+    int aSum = 0, bSum = 0;
+    
+    for(auto i = 0; i < _overrideScheme.size(); i++) {
+      int inc = pow(2,i);
+      auto k = _overrideScheme[i];
+      if(hasKey<string>(a,"@override." + k)) {
+        aSum |= inc;
+      }
+      if(hasKey<string>(b,"@override." + k)) {
+        bSum |= inc;
+      }
+    }
+    return aSum < bSum;
+  }
+
 
   //Type Factory
   ////////////////////////
+  DFGTypeFactory::DFGTypeFactory(string path) {
+    _fragments = loadJsons(path);
+  }
+
   const shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
     forward_list<ptree> typeFragments;
 
