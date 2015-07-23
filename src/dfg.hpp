@@ -86,6 +86,20 @@ namespace dfg {
     return aSum < bSum;
   }
 
+  bool DFGType::checkCollision() {
+    ptree prev = _fragments.begin();
+    
+    if(hasKey(prev,"@override")) {
+      throw "No defaults for type"; //FIXME
+    }
+    for(auto p = ++(_fragments.begin()); p != _fragments.end(); p++) {
+      if(!hasKey(p,"@override")) {
+        throw "Default collision for type"; //FIXME
+      }
+      //loop through one and check the iterator on the other. if it's not end(), different = true
+    }
+  }
+
 
   //Type Factory
   ////////////////////////
