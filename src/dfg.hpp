@@ -7,9 +7,10 @@
 #include <forward_list>
 #include <vector>
 #include <string>
-#include <tuple>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <cmath>
+#include <sstream>
 
 #include "loadJsons.hpp"
 
@@ -24,6 +25,11 @@ namespace dfg {
     return p.get_optional<T>(path) != boost::none;
   }
 
+  static string toString(const ptree &p) {
+    stringstream ss;
+    write_json(ss,p);
+    return ss.str();
+  }
 
   class DFGType {
     public:
@@ -34,9 +40,9 @@ namespace dfg {
       const inline vector<string>& getOverrideScheme() { return _overrideScheme; };
       const inline CacheStatus getLastCacheStatus() { return _lastCacheStatus; };
     private:
-      bool checkCollision();
+      void checkType();
       ptree mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments);
-      tuple<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
+      pair<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
       bool fragMatch(const ptree& fragment,const map<string,string>& context);
       string makeHash(const map<string,string>& context);
       bool fragCmp(const ptree &a, const ptree &b);
@@ -68,6 +74,8 @@ namespace dfg {
     _lastCacheStatus = CacheStatus::None;
 
     _fragments.sort([this](ptree &a,ptree &b) { return fragCmp(a,b);});
+
+    checkType();
   }
 
   bool DFGType::fragCmp(const ptree &a, const ptree &b) {
@@ -86,17 +94,40 @@ namespace dfg {
     return aSum < bSum;
   }
 
-  bool DFGType::checkCollision() {
-    ptree prev = _fragments.begin();
+  void DFGType::checkType() {
+    auto prev = _fragments.begin();
     
-    if(hasKey(prev,"@override")) {
-      throw "No defaults for type"; //FIXME
-    }
-    for(auto p = ++(_fragments.begin()); p != _fragments.end(); p++) {
-      if(!hasKey(p,"@override")) {
+    for(auto cur = _fragments.begin(); cur != _fragments.end(); cur++) {
+      if(cur == prev) {
+        if(hasKey<string>(*prev,"@override")) {
+          throw "No defaults for type"; //FIXME
+        }
+        continue;
+      }
+
+      if(!hasKey<string>(*cur,"@override")) {
         throw "Default collision for type"; //FIXME
       }
-      //loop through one and check the iterator on the other. if it's not end(), different = true
+
+      if(prev == _fragments.begin()) { //note increment
+        prev++;
+        continue;
+      }
+
+      int numCurOverrides = 0;
+      bool different = false;
+      for(auto &kv : cur->get_child("@override")) {
+        numCurOverrides++;
+        if(prev->get_optional<string>("@override." + kv.first) != kv.second.get_value<string>()) {
+          different = true;
+          break;
+        }
+      }
+
+      if(!different && numCurOverrides == prev->get_child("@override").size()) { 
+        throw "Duplicate keys:\n" + toString(cur->get_child("@override")) + toString(prev->get_child("@override"));
+      }
+      prev++;
     }
   }
 
