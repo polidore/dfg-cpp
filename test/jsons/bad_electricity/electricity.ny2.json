@@ -1,0 +1,8 @@
+{
+  "@type": "electricity_bad",
+  "@override": {
+    "state": "NY"
+  },
+  "kwhRate": 0.20,
+  "hydro": 0.6
+}

@@ -94,19 +94,27 @@ namespace dfg {
     return aSum < bSum;
   }
 
+  class CollisionException : public exception {
+    public:
+      CollisionException(string message) { _message = message; };
+      string str() { return _message; };
+    private:
+      string _message;
+  };
+
   void DFGType::checkType() {
     auto prev = _fragments.begin();
     
     for(auto cur = _fragments.begin(); cur != _fragments.end(); cur++) {
       if(cur == prev) {
         if(hasKey<string>(*prev,"@override")) {
-          throw "No defaults for type"; //FIXME
+          throw CollisionException("No defaults for type");
         }
         continue;
       }
 
       if(!hasKey<string>(*cur,"@override")) {
-        throw "Default collision for type"; //FIXME
+        throw CollisionException("Default collision for type");
       }
 
       if(prev == _fragments.begin()) { //note increment
@@ -125,7 +133,7 @@ namespace dfg {
       }
 
       if(!different && numCurOverrides == prev->get_child("@override").size()) { 
-        throw "Duplicate keys:\n" + toString(cur->get_child("@override")) + toString(prev->get_child("@override"));
+        throw CollisionException("Duplicate keys:\n" + toString(cur->get_child("@override")) + toString(prev->get_child("@override")));
       }
       prev++;
     }
