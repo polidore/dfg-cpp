@@ -58,8 +58,8 @@ namespace dfg {
   class DFGTypeFactory {
     public:
       DFGTypeFactory(string path);
-      const shared_ptr<DFGType> createType(string typeName, vector<string> overrideScheme);
-      const inline shared_ptr<DFGType> getType(string typeName) { return _types[typeName]; };
+      const shared_ptr<DFGType> createType(const string typeName, const vector<string>& overrideScheme);
+      const inline shared_ptr<DFGType> getType(const string typeName) { return _types[typeName]; };
     private:
       forward_list<ptree> _fragments;
       unordered_map<string,shared_ptr<DFGType>> _types;
@@ -68,6 +68,7 @@ namespace dfg {
   //Type
   /////////////////////////
   DFGType::DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme) {
+    //FIXME:use initilization
     _typeName = typeName;
     _fragments = typeFragments;
     _overrideScheme = overrideScheme;
@@ -146,7 +147,7 @@ namespace dfg {
     _fragments = loadJsons(path);
   }
 
-  const shared_ptr<DFGType> DFGTypeFactory::createType(string typeName, vector<string> overrideScheme) {
+  const shared_ptr<DFGType> DFGTypeFactory::createType(const string typeName, const vector<string>& overrideScheme) {
     forward_list<ptree> typeFragments;
 
     auto prevIt = _fragments.before_begin();
