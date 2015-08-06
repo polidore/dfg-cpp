@@ -67,15 +67,10 @@ namespace dfg {
   
   //Type
   /////////////////////////
-  DFGType::DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme) {
-    //FIXME:use initilization
-    _typeName = typeName;
-    _fragments = typeFragments;
-    _overrideScheme = overrideScheme;
-    _lastCacheStatus = CacheStatus::None;
-
+  DFGType::DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme) :
+    _typeName(typeName), _fragments(typeFragments), _overrideScheme(overrideScheme), _lastCacheStatus(CacheStatus::None)
+  {
     _fragments.sort([this](ptree &a,ptree &b) { return fragCmp(a,b);});
-
     checkType();
   }
 
