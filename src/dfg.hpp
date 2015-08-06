@@ -40,12 +40,12 @@ namespace dfg {
       const inline vector<string>& getOverrideScheme() { return _overrideScheme; };
       const inline CacheStatus getLastCacheStatus() { return _lastCacheStatus; };
     private:
-      void checkType();
-      ptree mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments);
-      pair<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
-      bool fragMatch(const ptree& fragment,const map<string,string>& context);
-      string makeHash(const map<string,string>& context);
-      bool fragCmp(const ptree &a, const ptree &b);
+      void checkType() const;
+      const ptree mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments);
+      const pair<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
+      bool fragMatch(const ptree& fragment,const map<string,string>& context) const;
+      const string makeHash(const map<string,string>& context);
+      bool fragCmp(const ptree &a, const ptree &b) const;
     private:
       string _typeName;
       forward_list<ptree> _fragments;
@@ -79,7 +79,7 @@ namespace dfg {
     checkType();
   }
 
-  bool DFGType::fragCmp(const ptree &a, const ptree &b) {
+  bool DFGType::fragCmp(const ptree &a, const ptree &b) const {
     int aSum = 0, bSum = 0;
     
     for(auto i = 0; i < _overrideScheme.size(); i++) {
@@ -103,7 +103,7 @@ namespace dfg {
       string _message;
   };
 
-  void DFGType::checkType() {
+  void DFGType::checkType() const {
     auto prev = _fragments.begin();
     
     for(auto cur = _fragments.begin(); cur != _fragments.end(); cur++) {
