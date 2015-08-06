@@ -41,11 +41,11 @@ namespace dfg {
       const inline CacheStatus getLastCacheStatus() { return _lastCacheStatus; };
     private:
       void checkType() const;
+      bool fragCmp(const ptree &a, const ptree &b) const;
       const ptree mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments);
       const pair<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
       bool fragMatch(const ptree& fragment,const map<string,string>& context) const;
       const string makeHash(const map<string,string>& context);
-      bool fragCmp(const ptree &a, const ptree &b) const;
     private:
       string _typeName;
       forward_list<ptree> _fragments;
@@ -64,6 +64,15 @@ namespace dfg {
       forward_list<ptree> _fragments;
       unordered_map<string,shared_ptr<DFGType>> _types;
   };
+
+  class CollisionException : public exception {
+    public:
+      CollisionException(string message) { _message = message; };
+      string str() { return _message; };
+    private:
+      string _message;
+  };
+
   
   //Type
   /////////////////////////
@@ -89,14 +98,6 @@ namespace dfg {
     }
     return aSum < bSum;
   }
-
-  class CollisionException : public exception {
-    public:
-      CollisionException(string message) { _message = message; };
-      string str() { return _message; };
-    private:
-      string _message;
-  };
 
   void DFGType::checkType() const {
     auto prev = _fragments.begin();
