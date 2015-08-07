@@ -99,6 +99,18 @@ namespace dfg {
     return aSum < bSum;
   }
 
+  const ptree DFGType::mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments) {
+    _lastCacheStatus = CacheStatus::None;
+    if(fragments.begin() == fragments.end()) {
+      throw "Nothing to merge";
+    }
+
+    ptree base(*fragments.begin()); //copy
+    for(auto cur = fragments.begin(); cur != fragments.end(); cur++) {
+
+    }
+  }
+
   void DFGType::checkType() const {
     auto prev = _fragments.begin();
     
@@ -114,7 +126,7 @@ namespace dfg {
         throw CollisionException("Default collision for type");
       }
 
-      if(prev == _fragments.begin()) { //note increment
+      if(prev == _fragments.begin()) {
         prev++;
         continue;
       }
@@ -128,6 +140,7 @@ namespace dfg {
           break;
         }
       }
+      
 
       if(!different && numCurOverrides == prev->get_child("@override").size()) { 
         throw CollisionException("Duplicate keys:\n" + toString(cur->get_child("@override")) + toString(prev->get_child("@override")));
