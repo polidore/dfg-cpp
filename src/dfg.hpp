@@ -42,7 +42,7 @@ namespace dfg {
     private:
       void checkType() const;
       bool fragCmp(const ptree &a, const ptree &b) const;
-      const ptree mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments);
+      const ptree mergeCfgs(const forward_list<ptree>& fragments);
       const pair<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
       bool fragMatch(const ptree& fragment,const map<string,string>& context) const;
       const string makeHash(const map<string,string>& context);
@@ -50,8 +50,8 @@ namespace dfg {
       string _typeName;
       forward_list<ptree> _fragments;
       vector<string> _overrideScheme;
-      unordered_map<string,ptree> _primaryCache;
-      unordered_map<string,forward_list<shared_ptr<ptree>>> _secondaryCache;
+      unordered_map<string,shared_ptr<ptree>> _primaryCache;
+      unordered_map<string,forward_list<ptree>> _secondaryCache;
       CacheStatus _lastCacheStatus;
   };
 
@@ -99,7 +99,7 @@ namespace dfg {
     return aSum < bSum;
   }
 
-  const ptree DFGType::mergeCfgs(const forward_list<shared_ptr<ptree>>& fragments) {
+  const ptree DFGType::mergeCfgs(const forward_list<ptree>& fragments) {
     _lastCacheStatus = CacheStatus::None;
     if(fragments.begin() == fragments.end()) {
       throw "Nothing to merge";
