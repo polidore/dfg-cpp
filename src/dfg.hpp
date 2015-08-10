@@ -105,9 +105,18 @@ namespace dfg {
       throw "Nothing to merge";
     }
 
-    ptree base(*fragments.begin()); //copy
-    for(auto cur = fragments.begin(); cur != fragments.end(); cur++) {
-
+    auto head = fragments.begin();
+    ptree base(*head); //copy & stack allocate. Will move later
+    for(auto cur = ++head; cur != fragments.end(); cur++) {
+      for(auto& kv : *cur) {
+        if(kv.second.empty()) {
+          base.put(kv.first,kv.second.get_value<string>());
+        }
+        else {
+          base.erase(kv.first);
+          base.add_child(kv.first,kv.second);
+        }
+      }
     }
   }
 
@@ -133,7 +142,7 @@ namespace dfg {
 
       int numCurOverrides = 0;
       bool different = false;
-      for(auto &kv : cur->get_child("@override")) {
+      for(auto& kv : cur->get_child("@override")) {
         numCurOverrides++;
         if(prev->get_optional<string>("@override." + kv.first) != kv.second.get_value<string>()) {
           different = true;
