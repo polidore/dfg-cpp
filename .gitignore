@@ -25,6 +25,7 @@ CMakeFiles/
 Makefile
 *.cmake
 test/Test
+test/Play
 Testing/
 
 *.swp

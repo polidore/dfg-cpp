@@ -8,28 +8,16 @@
 #include <vector>
 #include <string>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <cmath>
-#include <sstream>
 
 #include "loadJsons.hpp"
+#include "util.hpp"
 
 using namespace std;
 using boost::property_tree::ptree;
 
 namespace dfg {
   enum CacheStatus { Primary,Secondary,None };
-
-  template <class T>
-  static bool hasKey(const ptree& p,string path) {
-    return p.get_optional<T>(path) != boost::none;
-  }
-
-  static string toString(const ptree &p) {
-    stringstream ss;
-    write_json(ss,p);
-    return ss.str();
-  }
 
   class DFGType {
     public:
@@ -73,7 +61,7 @@ namespace dfg {
       string _message;
   };
 
-  
+
   //Type
   /////////////////////////
   DFGType::DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme) :
@@ -85,7 +73,7 @@ namespace dfg {
 
   bool DFGType::fragCmp(const ptree &a, const ptree &b) const {
     int aSum = 0, bSum = 0;
-    
+
     for(auto i = 0; i < _overrideScheme.size(); i++) {
       int inc = pow(2,i);
       auto k = _overrideScheme[i];
@@ -122,7 +110,7 @@ namespace dfg {
 
   void DFGType::checkType() const {
     auto prev = _fragments.begin();
-    
+
     for(auto cur = _fragments.begin(); cur != _fragments.end(); cur++) {
       if(cur == prev) {
         if(hasKey<string>(*prev,"@override")) {
@@ -149,9 +137,9 @@ namespace dfg {
           break;
         }
       }
-      
 
-      if(!different && numCurOverrides == prev->get_child("@override").size()) { 
+
+      if(!different && numCurOverrides == prev->get_child("@override").size()) {
         throw CollisionException("Duplicate keys:\n" + toString(cur->get_child("@override")) + toString(prev->get_child("@override")));
       }
       prev++;

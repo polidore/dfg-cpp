@@ -1,8 +1,9 @@
 #include "catch.hpp"
 #include "../src/loadJsons.hpp"
 #include "../src/dfg.hpp"
+#include "../src/util.hpp"
 
-TEST_CASE("Should load basic json data", "[json]") { 
+TEST_CASE("Should load basic json data", "[json]") {
   auto jsons = dfg::loadJsons("./");
   REQUIRE(std::distance(jsons.begin(),jsons.end()) == 9);
 }
@@ -21,7 +22,7 @@ TEST_CASE("DFG Basics", "[dfg]") {
 
   SECTION("Test Bad Type") {
     REQUIRE_THROWS_AS(auto type = factory.createType("electricity_bad",{"country","state","county","city"}),dfg::CollisionException);
-  } 
+  }
 
   SECTION("Test Electricity DFGType") {
     auto type = factory.createType("electricity",{"country","state","county","city"});
