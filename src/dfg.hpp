@@ -106,6 +106,7 @@ namespace dfg {
         }
       }
     }
+    return base;
   }
 
   void DFGType::checkType() const {
