@@ -32,3 +32,8 @@ Testing/
 *.core
 
 Win32/*
+Debug/*
+*.vcxproj*
+*.sln
+*.sdf
+.vs/
