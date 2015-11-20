@@ -26,6 +26,9 @@ Makefile
 *.cmake
 test/Test
 test/Play
+test/Test.dir
+test/Play.dir
+test/Debug
 Testing/
 
 *.swp
