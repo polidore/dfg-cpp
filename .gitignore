@@ -30,3 +30,5 @@ Testing/
 
 *.swp
 *.core
+
+Win32/*
