@@ -41,3 +41,4 @@ Debug/*
 *.sdf
 .vs/
 x64/
+.vscode/
