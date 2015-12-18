@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include <boost/property_tree/ptree.hpp>
+#include <vector>
 #include "../src/util.hpp"
 
 using boost::property_tree::ptree;
@@ -18,4 +19,13 @@ TEST_CASE("ptree copying semantics","[playground]") {
   base.add_child("b",p2.get_child("b"));
   REQUIRE(p2 != base);
   WARN("base: " << dfg::toString(base));
+
+  ptree inside;
+  inside.put("test.t",1);
+  std::vector<ptree*> v;
+  v.push_back(&inside);
+  inside.put("test.t",0);
+  v[0]->put("test.u",7);
+  REQUIRE(inside == *v[0]);
+  WARN("outside: " << dfg::toString(inside) << "inside: " << dfg::toString(*v[0]));
 }

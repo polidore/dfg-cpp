@@ -22,18 +22,20 @@ namespace dfg {
     class DFGType {
         public:
             DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme);
-            shared_ptr<ptree> getCfg(const map<string,string>& context);
+            shared_ptr<ptree> getCfg(const map<string,string>& context); //TODO
             const inline string getTypeName() { return _typeName; };
             const inline forward_list<ptree>& getFragments() { return _fragments; };
             const inline vector<string>& getOverrideScheme() { return _overrideScheme; };
             const inline CacheStatus getLastCacheStatus() { return _lastCacheStatus; };
         private:
             void checkType() const;
-            bool fragCmp(const ptree &a, const ptree &b) const;
+            bool fragCmp(const ptree &a, const ptree &b) const; //sorter
             const ptree mergeCfgs(const forward_list<ptree>& fragments);
-            const pair<string,forward_list<shared_ptr<ptree>>> match(const map<string,string>& context);
+            const pair<string,vector<ptree*>> match(const map<string,string>& context) const;
             bool fragMatch(const ptree& fragment,const map<string,string>& context) const;
-            const string makeHash(const map<string,string>& context);
+            const string makeHash(const map<string,string>& context) const;
+            string makeHashString(size_t size) const;
+            map<string,string> contextFromOverride(const ptree& override) const;
         private:
             string _typeName;
             forward_list<ptree> _fragments;
@@ -75,7 +77,7 @@ namespace dfg {
         int aSum = 0, bSum = 0;
 
         for(auto i = 0; i < _overrideScheme.size(); i++) {
-            int inc = pow(2,i);
+            int inc = (int)pow(2,i);
             auto k = _overrideScheme[i];
             if(hasKey<string>(a,"@override." + k)) {
                 aSum |= inc;
@@ -85,6 +87,34 @@ namespace dfg {
             }
         }
         return aSum < bSum;
+    }
+
+    map<string,string> DFGType::contextFromOverride(const ptree& override) const {
+        map<string,string> m;
+        for(auto& kv : override) {
+            m.insert(make_pair(kv.first,kv.second.get_value<string>()));
+        }
+        return m;
+    }
+
+    const pair<string,vector<ptree*>> DFGType::match(const map<string,string>& context) const {
+        string reducedHash = makeHashString(context.size());
+        reducedHash = "default|";
+        vector<ptree*> matches;
+
+        for(auto cur = _fragments.begin(); cur != _fragments.end(); cur++)
+        {
+            auto f = *cur;
+            if(fragMatch(f,context)) {
+                matches.push_back(&f);
+
+                auto fragOverride = f.get_child_optional("@override");
+                if(fragOverride) {
+                    reducedHash += makeHash(contextFromOverride(*fragOverride));
+                }
+            }
+        }
+        return make_pair(reducedHash,matches);
     }
 
     const ptree DFGType::mergeCfgs(const forward_list<ptree>& fragments) {
@@ -107,6 +137,50 @@ namespace dfg {
             }
         }
         return base;
+    }
+
+    bool DFGType::fragMatch(const ptree& fragment,const map<string,string>& context) const {
+        auto override = fragment.get_child_optional("@override");
+        if(!override) {
+            return true; //defaults
+        }
+
+        for(auto& kv : context) {
+            auto contextKey = kv.first;
+            auto contextValue = kv.second;
+            auto fragOverrideValue = override->get_optional<string>(contextKey);
+
+            if(fragOverrideValue && *fragOverrideValue != contextValue) { //missing in frag means match all contexts
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    string DFGType::makeHashString(size_t size) const {
+        string hash;
+        size_t desiredSize = 20*size; //assumes 20 characters for key and value on avg
+        if(hash.capacity() < desiredSize) { //in case this varies by platform
+            hash.reserve(desiredSize);
+        }
+        return hash;
+    }
+
+    const string DFGType::makeHash(const map<string,string>& context) const {
+        string hash = makeHashString(context.size());
+
+        for(auto& kv : context) {
+            auto k = kv.first;
+            auto v = kv.second;
+            if(v == "") {
+                continue;
+            }
+            hash += k + "=" + v + "|";
+        }
+
+        hash.shrink_to_fit();
+        return hash;
     }
 
     void DFGType::checkType() const {
