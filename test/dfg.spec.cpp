@@ -4,12 +4,12 @@
 #include "../src/util.hpp"
 
 TEST_CASE("Should load basic json data", "[json]") {
-  auto jsons = dfg::loadJsons("./");
+  auto jsons = dfg::loadJsons("./test/jsons");
   REQUIRE(std::distance(jsons.begin(),jsons.end()) == 9);
 }
 
 TEST_CASE("DFG Basics", "[dfg]") {
-  auto factory = dfg::DFGTypeFactory("./");
+  auto factory = dfg::DFGTypeFactory("./test/jsons");
 
   SECTION("Test the factory") {
     auto type = factory.createType("electricity",{"country","state","county","city"});
