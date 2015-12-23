@@ -9,6 +9,7 @@
 #include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <cmath>
+#include <memory>
 
 #include "loadJsons.hpp"
 #include "util.hpp"
@@ -17,12 +18,12 @@ using namespace std;
 using boost::property_tree::ptree;
 
 namespace dfg {
-    enum CacheStatus { Primary,Secondary,None };
+    enum CacheStatus { Primary,Secondary,Miss,None };
 
     class DFGType {
         public:
             DFGType(string typeName, forward_list<ptree> typeFragments, vector<string> overrideScheme);
-            shared_ptr<ptree> getCfg(const map<string,string>& context); //TODO
+            shared_ptr<ptree> getCfg(map<string,string>& context);
             const inline string getTypeName() { return _typeName; };
             const inline forward_list<ptree>& getFragments() { return _fragments; };
             const inline vector<string>& getOverrideScheme() { return _overrideScheme; };
@@ -30,7 +31,7 @@ namespace dfg {
         private:
             void checkType() const;
             bool fragCmp(const ptree &a, const ptree &b) const; //sorter
-            const ptree mergeCfgs(const forward_list<ptree>& fragments);
+            const ptree mergeCfgs(const vector<ptree*>& fragments);
             const pair<string,vector<ptree*>> match(const map<string,string>& context) const;
             bool fragMatch(const ptree& fragment,const map<string,string>& context) const;
             const string makeHash(const map<string,string>& context) const;
@@ -41,7 +42,7 @@ namespace dfg {
             forward_list<ptree> _fragments;
             vector<string> _overrideScheme;
             unordered_map<string,shared_ptr<ptree>> _primaryCache;
-            unordered_map<string,forward_list<ptree>> _secondaryCache;
+            unordered_map<string,shared_ptr<ptree>> _secondaryCache;
             CacheStatus _lastCacheStatus;
     };
 
@@ -71,6 +72,38 @@ namespace dfg {
     {
         _fragments.sort([this](ptree &a,ptree &b) { return fragCmp(a,b);});
         checkType();
+    }
+
+    shared_ptr<ptree> DFGType::getCfg(map<string,string>& context) {
+        auto hash = context.find("@hash"); // iter to reduce number of lookups
+        string hashStr;
+        if(hash != context.end()) {
+            hashStr = hash->second;
+        }
+        else {
+            hashStr = makeHash(context);
+            context.insert({"@hash",hashStr});
+        }
+
+        auto cfg = _primaryCache[hashStr];
+        if(cfg) {
+            _lastCacheStatus = CacheStatus::Primary;
+            return cfg;
+        }
+
+        auto matches = match(context);
+        cfg = _secondaryCache[matches.first];
+        if(cfg) {
+            _lastCacheStatus = CacheStatus::Secondary;
+            _primaryCache.insert({hashStr,cfg});
+            return cfg;
+        }
+
+        auto newCfg = make_shared<ptree>(mergeCfgs(matches.second));
+        _secondaryCache.insert({matches.first,newCfg});
+        _primaryCache.insert({hashStr,newCfg});
+        _lastCacheStatus = CacheStatus::Miss;
+        return newCfg;
     }
 
     bool DFGType::fragCmp(const ptree &a, const ptree &b) const {
@@ -117,16 +150,15 @@ namespace dfg {
         return make_pair(reducedHash,matches);
     }
 
-    const ptree DFGType::mergeCfgs(const forward_list<ptree>& fragments) {
-        _lastCacheStatus = CacheStatus::None;
-        if(fragments.begin() == fragments.end()) {
+    const ptree DFGType::mergeCfgs(const vector<ptree*>& fragments) {
+        if(fragments.size() == 0) {
             throw "Nothing to merge";
         }
 
         auto head = fragments.begin();
-        ptree base(*head); //copy & stack allocate. Will move later
+        ptree base(**head); //copy & stack allocate. Will move later
         for(auto cur = ++head; cur != fragments.end(); cur++) {
-            for(auto& kv : *cur) {
+            for(auto& kv : **cur) {
                 if(kv.second.empty()) {
                     base.put(kv.first,kv.second.get_value<string>());
                 }
