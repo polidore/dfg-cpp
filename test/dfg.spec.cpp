@@ -2,6 +2,7 @@
 #include "../src/loadJsons.hpp"
 #include "../src/dfg.hpp"
 #include "../src/util.hpp"
+#include <map>
 
 TEST_CASE("Should load basic json data", "[json]") {
   auto jsons = dfg::loadJsons("./test/jsons");
@@ -35,5 +36,16 @@ TEST_CASE("DFG Basics", "[dfg]") {
 
     REQUIRE(dfg::hasKey<string>(*fragments.begin(),"@override") == false); //defaults
     REQUIRE(dfg::hasKey<string>(*(++fragments.begin()),"@override") == true);
+
+    map<string,string> context {
+        {"country","us"},
+        {"state","NY"},
+        {"county","new york"},
+        {"city","new york"}
+    };
+    WARN("About to run getCfg");
+    auto cfg = type->getCfg(context);
+    WARN("Ran getcfg");
+    REQUIRE(context.count("@hash") == 1);
   }
 }

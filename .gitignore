@@ -42,3 +42,4 @@ Debug/*
 .vs/
 x64/
 .vscode/
+*.opensdf
