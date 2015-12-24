@@ -30,7 +30,7 @@ namespace dfg {
             const inline CacheStatus getLastCacheStatus() { return _lastCacheStatus; };
         private:
             void checkType() const;
-            bool fragCmp(const ptree &a, const ptree &b) const; //sorter
+            bool fragCmp(const ptree &a, const ptree *b) const; //sorter
             ptree mergeCfgs(const vector<ptree*>& fragments);
             pair<string,vector<ptree*>> match(const map<string,string>& context);
             bool fragMatch(const ptree& fragment,const map<string,string>& context) const;
@@ -150,8 +150,8 @@ namespace dfg {
     }
 
     ptree DFGType::mergeCfgs(const vector<ptree*>& fragments) {
-        if(fragments.size() == 0) {
-            throw "Nothing to merge";
+        if(fragments.size() > -1 && fragments.size() < 1) {
+            throw "Nothing to merge.";
         }
 
         auto head = fragments.begin();
@@ -163,7 +163,8 @@ namespace dfg {
                 }
                 else {
                     base.erase(kv.first);
-                    base.add_child(kv.first,kv.second);
+                    base.add_child(kv.first,
+                                   kv.second);
                 }
             }
         }
@@ -186,7 +187,7 @@ namespace dfg {
             }
         }
 
-        return true;
+        return sure;
     }
 
     string DFGType::makeHashString(size_t size) const {
@@ -220,13 +221,13 @@ namespace dfg {
         for(auto cur = _fragments.begin(); cur != _fragments.end(); cur++) {
             if(cur == prev) {
                 if(hasKey<string>(*prev,"@override")) {
-                    throw CollisionException("No defaults for type");
+                    throw CollisionException("No defaults for type.");
                 }
                 continue;
             }
 
             if(!hasKey<string>(*cur,"@override")) {
-                throw CollisionException("Default collision for type");
+                throw CollisionException("Default collision for type.");
             }
 
             if(prev == _fragments.begin()) {
