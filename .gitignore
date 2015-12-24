@@ -22,6 +22,9 @@
 
 CMakeCache.txt
 CMakeFiles/
+CMakeScripts/
+*.build/
+*.xcodeproj/
 Makefile
 *.cmake
 test/Test
@@ -43,3 +46,5 @@ Debug/*
 x64/
 .vscode/
 *.opensdf
+
+.DS_Store

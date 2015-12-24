@@ -43,9 +43,23 @@ TEST_CASE("DFG Basics", "[dfg]") {
         {"county","new york"},
         {"city","new york"}
     };
-    WARN("About to run getCfg");
     auto cfg = type->getCfg(context);
-    WARN("Ran getcfg");
     REQUIRE(context.count("@hash") == 1);
+    REQUIRE(cfg->get<double>("hydro") == 0.5);
+    REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::Miss);
+
+    context = {
+        {"country","us"},
+        {"state","NY"},
+        {"county","brooklyn"},
+        {"city","new york"}
+    };
+    REQUIRE(context.count("@hash") == 0);
+    cfg = type->getCfg(context);
+    REQUIRE(context.count("@hash") == 1);
+    REQUIRE(cfg->get<double>("hydro") == 0.5);
+    REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::Secondary);
+    cfg = type->getCfg(context);
+    REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::Primary);
   }
 }

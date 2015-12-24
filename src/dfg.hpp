@@ -31,10 +31,10 @@ namespace dfg {
         private:
             void checkType() const;
             bool fragCmp(const ptree &a, const ptree &b) const; //sorter
-            const ptree mergeCfgs(const vector<ptree*>& fragments);
-            const pair<string,vector<ptree*>> match(const map<string,string>& context) const;
+            ptree mergeCfgs(const vector<ptree*>& fragments);
+            pair<string,vector<ptree*>> match(const map<string,string>& context);
             bool fragMatch(const ptree& fragment,const map<string,string>& context) const;
-            const string makeHash(const map<string,string>& context) const;
+            string makeHash(const map<string,string>& context) const;
             string makeHashString(size_t size) const;
             map<string,string> contextFromOverride(const ptree& override) const;
         private:
@@ -85,18 +85,18 @@ namespace dfg {
             context.insert({"@hash",hashStr});
         }
 
-        auto cfg = _primaryCache[hashStr];
-        if(cfg) {
+        auto cfg = _primaryCache.find(hashStr);
+        if(cfg != _primaryCache.end()) {
             _lastCacheStatus = CacheStatus::Primary;
-            return cfg;
+            return cfg->second;
         }
 
         auto matches = match(context);
-        cfg = _secondaryCache[matches.first];
-        if(cfg) {
+        cfg = _secondaryCache.find(matches.first);
+        if(cfg != _secondaryCache.end()) {
             _lastCacheStatus = CacheStatus::Secondary;
-            _primaryCache.insert({hashStr,cfg});
-            return cfg;
+            _primaryCache.insert({hashStr,cfg->second});
+            return cfg->second;
         }
 
         auto newCfg = make_shared<ptree>(mergeCfgs(matches.second));
@@ -130,33 +130,32 @@ namespace dfg {
         return m;
     }
 
-    const pair<string,vector<ptree*>> DFGType::match(const map<string,string>& context) const {
+    pair<string,vector<ptree*>> DFGType::match(const map<string,string>& context) {
         string reducedHash = makeHashString(context.size());
         reducedHash = "default|";
         vector<ptree*> matches;
 
         for(auto cur = _fragments.begin(); cur != _fragments.end(); cur++)
         {
-            auto f = *cur;
-            if(fragMatch(f,context)) {
-                matches.push_back(&f);
+            if(fragMatch(*cur,context)) {
+                matches.push_back(&*cur);
 
-                auto fragOverride = f.get_child_optional("@override");
+                auto fragOverride = cur->get_child_optional("@override");
                 if(fragOverride) {
                     reducedHash += makeHash(contextFromOverride(*fragOverride));
                 }
             }
         }
-        return make_pair(reducedHash,matches);
+        return make_pair(reducedHash,move(matches));
     }
 
-    const ptree DFGType::mergeCfgs(const vector<ptree*>& fragments) {
+    ptree DFGType::mergeCfgs(const vector<ptree*>& fragments) {
         if(fragments.size() == 0) {
             throw "Nothing to merge";
         }
 
         auto head = fragments.begin();
-        ptree base(**head); //copy & stack allocate. Will move later
+        ptree base(**head);
         for(auto cur = ++head; cur != fragments.end(); cur++) {
             for(auto& kv : **cur) {
                 if(kv.second.empty()) {
@@ -199,7 +198,7 @@ namespace dfg {
         return hash;
     }
 
-    const string DFGType::makeHash(const map<string,string>& context) const {
+    string DFGType::makeHash(const map<string,string>& context) const {
         string hash = makeHashString(context.size());
 
         for(auto& kv : context) {
