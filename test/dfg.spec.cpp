@@ -39,8 +39,8 @@ TEST_CASE("DFG Basics", "[dfg]") {
 
     map<string,string> context {
         {"country","us"},
-        {"state","NY"},
         {"county","new york"},
+        {"state","NY"},
         {"city","new york"}
     };
     auto cfg = type->getCfg(context);
@@ -48,11 +48,12 @@ TEST_CASE("DFG Basics", "[dfg]") {
     REQUIRE(cfg->get<double>("hydro") == 0.5);
     REQUIRE(type->getLastCacheStatus() == dfg::CacheStatus::Miss);
 
+    //order of context in map shouldn't matter
     context = {
+        {"city","new york"},
         {"country","us"},
         {"state","NY"},
-        {"county","brooklyn"},
-        {"city","new york"}
+        {"county","brooklyn"}
     };
     REQUIRE(context.count("@hash") == 0);
     cfg = type->getCfg(context);

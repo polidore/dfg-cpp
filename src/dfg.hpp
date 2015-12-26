@@ -201,13 +201,11 @@ namespace dfg {
     string DFGType::makeHash(const map<string,string>& context) const {
         string hash = makeHashString(context.size());
 
-        for(auto& kv : context) {
-            auto k = kv.first;
-            auto v = kv.second;
-            if(v == "") {
-                continue;
-            }
-            hash += k + "=" + v + "|";
+        for(auto& k : _overrideScheme) {
+          auto v = context.find(k);
+          if(v != context.end()) {
+            hash += k + "=" + v->second + "|";
+          }
         }
 
         hash.shrink_to_fit();
