@@ -12,3 +12,38 @@ C++ Implementation of DFG.  See the nodejs [implementation](https://github.com/p
   * Xcode
   * Visual Studio
   * gcc / make
+
+## Basic Use
+
+Consider this json config set:
+
+```json
+{
+  "@type": "electricity",
+  "kwhRate": 0.2,
+  "ac": true,
+  "voltage": 220,
+  "hydro": 0.2
+}
+
+{
+  "@type": "electricity",
+  "@override": {
+    "country": "US"
+  },
+  "voltage": 110,
+  "kwhRate": 0.12
+}
+```
+
+Use this C++ to get the US configs overridden on the defaults.
+
+```c++
+auto factory = dfg::DFGTypeFactory("./test/jsons");
+auto type = factory.createType("electricity",{"country","state","county","city"});
+map<string,string> context {
+    {"country","us"}
+};
+auto cfg = type->getCfg(context);
+cout << "US voltage: " << cfg->get<int>("voltage") << endl;
+```
