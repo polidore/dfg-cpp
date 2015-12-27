@@ -13,6 +13,12 @@ C++ Implementation of DFG.  See the nodejs [implementation](https://github.com/p
   * Visual Studio
   * gcc / make
 
+```
+cmake .
+make
+make test
+```
+
 ## Basic Use
 
 Consider this json config set:
@@ -39,6 +45,8 @@ Consider this json config set:
 Use this C++ to get the US configs overridden on the defaults.
 
 ```c++
+#include "dfg.hpp"
+
 auto factory = dfg::DFGTypeFactory("./test/jsons");
 auto type = factory.createType("electricity",{"country","state","county","city"});
 map<string,string> context {
