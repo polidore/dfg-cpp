@@ -45,5 +45,5 @@ map<string,string> context {
     {"country","us"}
 };
 auto cfg = type->getCfg(context);
-cout << "US voltage: " << cfg->get<int>("voltage") << endl;
+cout << "US voltage: " << cfg->get<int>("voltage") << endl; //US voltage: 110
 ```
